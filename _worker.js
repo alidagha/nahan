@@ -51,9 +51,10 @@ export default {
                 dash: `/${encodeURI(sysConfig.apiRoute)}/dash`,
                 auth: `/${encodeURI(sysConfig.apiRoute)}/api/auth`,
                 sync: `/${encodeURI(sysConfig.apiRoute)}/api/sync`,
+                tg: `/${encodeURI(sysConfig.apiRoute)}/tg`,
             };
 
-            const isAuthorizedRoute = reqPath === routes.data || reqPath === routes.dash || reqPath === routes.auth || reqPath === routes.sync;
+            const isAuthorizedRoute = reqPath === routes.data || reqPath === routes.dash || reqPath === routes.auth || reqPath === routes.sync || reqPath === routes.tg;
 
             if (!isTelemetryStream && !isAuthorizedRoute) {
                 return serveMaintenancePage(request, url);
@@ -69,7 +70,11 @@ export default {
                 }
                 if (reqPath === routes.sync) {
                     if (request.method !== "POST") return new Response("405", { status: 405 });
-                    return await handleConfigSync(request, env);
+                    return await handleConfigSync(request, env, ctx);
+                }
+                if (reqPath === routes.tg) {
+                    if (request.method !== "POST") return new Response("405", { status: 405 });
+                    return await handleTelegramWebhook(request, env, url.hostname);
                 }
                 if (reqPath === routes.data) {
                     const ua = (request.headers.get("User-Agent") || "").toLowerCase();
@@ -201,7 +206,11 @@ async function sendTelegramMessage(request, type) {
                 parse_mode: 'HTML',
                 reply_markup: {
                     inline_keyboard: [
-                        [{ text: "ورود به پنل 🔐", url: panelUrl }]
+                        [{ text: "ورود به پنل 🔐", web_app: { url: panelUrl } }],
+                        [
+                            { text: "دریافت ساب 🔗", callback_data: "get_sub" },
+                            { text: "بروزرسانی مصرف 📊", callback_data: "get_usage" }
+                        ]
                     ]
                 }
             })
@@ -228,15 +237,105 @@ async function handleAuth(request, hostName, ctx) {
     } catch (e) { return new Response(JSON.stringify({ success: false }), { status: 400 }); }
 }
 
-async function handleConfigSync(request, env) {
+async function handleConfigSync(request, env, ctx) {
     try {
         const data = await request.json();
         if (data.key !== sysConfig.masterKey) return new Response(JSON.stringify({ success: false }), { status: 401 });
         if (!env.IOT_DB) return new Response(JSON.stringify({ success: false, msg: "DB Error" }), { status: 400 });
         const nextConfig = { ...sysConfig, ...data.config };
+        
         await env.IOT_DB.put("sys_config", JSON.stringify(nextConfig));
+        
+        if (nextConfig.tgToken && ctx) {
+            const hookUrl = `https://${new URL(request.url).hostname}/${encodeURI(nextConfig.apiRoute)}/tg`;
+            ctx.waitUntil(fetch(`https://api.telegram.org/bot${nextConfig.tgToken}/setWebhook`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: hookUrl })
+            }).catch(()=>{}));
+        }
+
         return new Response(JSON.stringify({ success: true, newRoute: nextConfig.apiRoute }), { status: 200 });
     } catch (e) { return new Response(JSON.stringify({ success: false }), { status: 400 }); }
+}
+
+async function handleTelegramWebhook(request, env, hostName) {
+    try {
+        const update = await request.json();
+        const tgApi = `https://api.telegram.org/bot${sysConfig.tgToken}`;
+        
+        if (update.callback_query) {
+            const cb = update.callback_query;
+            const chatId = cb.message?.chat?.id;
+            const data = cb.data;
+
+            if (chatId) {
+                if (data === "get_usage") {
+                    let usageStr = "نامشخص (0.00%)";
+                    if (sysConfig.cfAccountId && sysConfig.cfApiToken) {
+                        const reqs = await fetchCloudflareUsage(sysConfig.cfAccountId, sysConfig.cfApiToken);
+                        if (reqs !== null) {
+                            const pct = ((reqs / 100000) * 100).toFixed(2);
+                            usageStr = `${reqs}/100000 (${pct}%)`;
+                        } else {
+                            usageStr = "خطا در دریافت مصرف";
+                        }
+                    } else {
+                        usageStr = "مقادیر CF تنظیم نشده است";
+                    }
+
+                    await fetch(`${tgApi}/answerCallbackQuery`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ callback_query_id: cb.id, text: `مصرف روزانه:\n${usageStr}`, show_alert: true })
+                    });
+                } else if (data === "get_sub") {
+                    const subSync = `https://${hostName}/${encodeURI(sysConfig.apiRoute)}`;
+                    await fetch(`${tgApi}/sendMessage`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            chat_id: chatId, 
+                            text: `🔗 **لینک ساب شما:**\n\n<code>${subSync}</code>`, 
+                            parse_mode: 'HTML' 
+                        })
+                    });
+                    await fetch(`${tgApi}/answerCallbackQuery`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ callback_query_id: cb.id, text: "لینک ساب ارسال شد." })
+                    });
+                }
+            }
+        } else if (update.message && update.message.text) {
+            const chatId = update.message.chat.id;
+            
+            if (chatId.toString() === sysConfig.tgChatId.toString()) {
+                const panelUrl = `https://${hostName}/${encodeURI(sysConfig.apiRoute)}/dash`;
+                await fetch(`${tgApi}/sendMessage`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: chatId,
+                        text: "🤖 **ربات مدیریت پروکسی نهان**\nانتخاب کنید:",
+                        parse_mode: 'HTML',
+                        reply_markup: {
+                            inline_keyboard: [
+                                [{ text: "ورود به پنل 🔐", web_app: { url: panelUrl } }],
+                                [
+                                    { text: "دریافت ساب 🔗", callback_data: "get_sub" },
+                                    { text: "بروزرسانی مصرف 📊", callback_data: "get_usage" }
+                                ]
+                            ]
+                        }
+                    })
+                });
+            }
+        }
+        return new Response("OK", { status: 200 });
+    } catch(e) {
+        return new Response("OK", { status: 200 });
+    }
 }
 
 async function processTelemetryStream() {
