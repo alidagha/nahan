@@ -1,97 +1,360 @@
-# Project Nahan (نهان) - Detailed System Guide
+# Project Nahan (نهان) — User Walkthrough
 
-Welcome to the comprehensive technical documentation and system guide for **Project Nahan**. This guide explains all features, hidden definitions, configurations, and operations within your secure IoT Telemetry Gateway and Subscription Panel.
+> 🇮🇷 [راهنمای فارسی / Persian Version](./HELP_FA.md) | 📖 [Back to README](./README.md)
 
----
-
-## 1. 🔍 Revealing the Masked/Disguised Terminology
-
-To bypass active network censorship and prevent DPI (Deep Packet Inspection), Project Nahan utilizes custom terminology to mask well-known protocols and formats. Below are the hidden meanings behind these terms:
-
-| Disguised Term | Real Protocol/Concept | Explanation |
-| :--- | :--- | :--- |
-| **Alpha Mode (V-Core)** | **VLESS Protocol** | The primary lightweight and secure transport protocol used to deliver secure traffic bypass networks. |
-| **Beta Mode (T-Core)** | **Trojan Protocol** | A fast, stealth protocol that disguises network traffic as standard HTTPS web browsing. |
-| **Format Alpha / Format A** | **Base64 vless:// / trojan:// URI** | Raw subscription stream containing base64-encoded proxy connection strings in uniform format. |
-| **Format Beta / Format B** | **Clash (YAML Layout)** | A structured configuration profile delivered in lightweight YAML format for Clash clients (Clash Meta, Stash). |
-| **Format Gamma / Format C** | **Sing-Box (JSON Rules)** | A unified JSON diagnostic payload and profile mapping configured for Sing-Box, Shadowrocket, and compatible apps. |
-| **Backup Relay IP / Proxy IP** | **Cloudflare Workers Proxy** | An intermediate Clean IP or CDN address used to bypass the direct Cloudflare IP blocks. |
-| **Secret API Route** | **Hidden URL Prefix** | A customized secret route serving administrative actions and preventing scanning of the endpoint. |
-| **Maintenance Hosts** | **Camouflage Website** | A safe, non-blocked destination (e.g., Ubuntu, Docker) that the system forwards scanner probes to if someone opens your worker root or without valid headers. |
+This guide walks you through every screen and setting in the Nahan dashboard after your gateway is deployed. If you haven't deployed yet, start with the [README](./README.md).
 
 ---
 
-## 2. 🎛️ Comprehensive Feature Explanation (Tab by Tab)
+## Table of Contents
 
-### 📡 1. Endpoints Tab (نقاط اتصال)
-This is the delivery area where subscriber profiles and proxy connection streams are obtained.
-
-*   **Profiles / Users List**: Separated cards or cards representing each active configuration profile.
-*   **Copy Button**: Instantly copies the subscription link to the clipboard.
-*   **QR Button**: Renders a dynamic, browser-compatible QR Code of the subscription link for quick mobile scanning.
-*   **Format Alpha Link**: The default Base64/URI collection sub-link.
-*   **Format Beta Link**: Custom link containing `&flag=clash` parameter to serve YAML Clash configurations.
-*   **Format Gamma Link**: Custom link containing `&flag=sing` parameter to serve Sing-box JSON subscription.
-*   **Retrieve Parsed Content Button**: Displays the decoded, human-readable raw content inside a secure pop-up directly in the browser, showing exactly what is being sent to your client software.
-*   **Print Config Card Button**: Optimizes the page layout for clean printing or saving as a PDF.
-
----
-
-### 📊 2. Metrics Tab (شاخص‌ها)
-Displays live diagnostics and geographic telemetry of the Cloudflare CDN edge serving your requests.
-
-*   **Origin IP**: Shows the external IP of the client requesting the admin dashboard or subscription.
-*   **Edge Node (Colo)**: Shows the Cloudflare tripartite airport code (e.g., IKA, FRA) executing your Worker thread.
-*   **Data Region**: Resolves the exact city and country of the incoming request connection.
-*   **Live Profile Usage**: Displays real-time metrics showing which user-profiles or UUIDs reached the gateway, and how many requests they made.
-*   **Latency Diagnostics (Run Diagnostics Button)**: Triggers a secure browser-to-node ping check measuring actual latency in milliseconds from your local machine to the active target nodes.
+1. [Accessing the Dashboard](#1-accessing-the-dashboard)
+2. [Authentication](#2-authentication)
+3. [Tab 1 — Endpoints (Info)](#3-tab-1--endpoints-info)
+4. [Tab 2 — Metrics (Network)](#4-tab-2--metrics-network)
+5. [Tab 3 — System (Settings)](#5-tab-3--system-settings)
+6. [Tab 4 — Advanced (Network)](#6-tab-4--advanced-network)
+7. [Tab 5 — Activity Logs](#7-tab-5--activity-logs)
+8. [Applying & Saving Changes](#8-applying--saving-changes)
+9. [Backup & Restore](#9-backup--restore)
+10. [Telegram Bot Commands](#10-telegram-bot-commands)
+11. [Tips & Best Practices](#11-tips--best-practices)
 
 ---
 
-### ⚙️ 3. System Tab (تنظیمات پایه)
-Configure the central identity parameters and route properties of your deployment.
+## 1. Accessing the Dashboard
 
-*   **Primary Display Mode**: Choose what protocol type is generated. Options are VLESS (Alpha Mode), Trojan (Beta Mode), or Combined (Both).
-*   **Data Ports Selector**: Select which Cloudflare compatible ports are used (e.g., 443, 2053, 2083 for secure TLS; 80, 8080 for standard plain HTTP). Multiple ports can be selected simultaneously.
-*   **Device UUID (Hidden Password)**: The core unique key of your encryption. Leave empty to let the system generate a secure UUID.
-*   **API Route (Hidden Path)**: Custom path to your admin dashboard and sync engine. For example, setting this to `secure88` will change your dashboard access to `https://your-domain.com/secure88/dash`.
-*   **Master Key (Admin Password)**: Your credential passcode to login into this control board.
-*   **Custom Panel URL / Subscription Domain**: A new custom field allowing you to specify an alternative domain name or URL (e.g., `custom-domain.com` or `https://sub.domain.com`) to be used when generating and copying subscriber links. If set, the panel replaces the default worker hostname with this URL.
-*   **Backup & Restore (Export / Import Configuration)**: 
-    *   *Export*: Download your complete configurations as a structured `.json` secure file.
-    *   *Import*: Read and apply previous backups instantly. Requires clicking "Update Config" to persist.
+By default, the dashboard lives at the `/sync/dash` path of your worker.
 
----
+Open your browser and go to:
 
-### 🌐 4. Advanced Tab (پیشرفته)
-Fine-tune sub-layer protocols, CDN overrides, and clustering settings.
+```
+https://<YOUR_WORKER_DOMAIN>/sync/dash
+```
 
-*   **Clean IPs (Multi-Generator)**: Input a custom list of high-speed, non-cached CDN fronting IPs (one per line). The subscription generator multiplies client configurations for each of these entered Clean IPs!
-*   **Slave Worker Nodes (Cluster Sync)**: Enter domains of independent sibling workers. The master node automatically syncs user limits and dashboard configurations with them in real-time on every save!
-*   **TLS Signature (Fingerprint)**: Emulate browser network finger-signatures (Chrome, Firefox, Safari) to bypass passive profiling.
-*   **Resolver IP**: Enter the DNS IP used to bypass standard resolver tracking.
-*   **Custom DNS (DoH Provider)**: Secure DNS-Over-HTTPS provider (defaults to Cloudflare DoH) to query censorship-blocked domains.
-*   **Maintenance Hosts (Camouflage)**: A safe list of domain redirectors used as camouflage for non-authorized viewers.
-*   **Backup Relay IP / Proxy IP**: Enter an alternative IP used to proxy connections through the outer cloud network.
-*   **TCP Fast Open (TFO)**: Check to minimize handshaking latencies over networks that support TCP fast-pathing.
-*   **Secure Hello (ECH - Encrypted Client Hello)**: Enable ECH support on compatible clients to hide hostnames in TLS handshakes.
-*   **Telegram Bot Webhook Integration** (`tgToken` & `tgChatId`): Connect a Telegram Bot to receive security alerts when the dashboard is accessed.
-*   **Kill Switch (Pause System)**: Immediately pause all gateway relays and block connections instantly for security.
+> **Why not the root URL?**
+> Visiting `/` or `/sync` without `/dash` intentionally shows a camouflage page — Ubuntu's site, Docker's site, or another public website — to fool network scanners and hide that a proxy gateway is running here. This is by design.
+
+If you changed your **API Route** in settings (e.g., to `hidden`), your dashboard will be at:
+
+```
+https://<YOUR_WORKER_DOMAIN>/hidden/dash
+```
 
 ---
 
-### 👥 5. Users Tab (کاربران)
-Manage subscriber identities, monitor data limits, and configure expiration.
+## 2. Authentication
 
-*   **User Search**: Speedily search through subscribers by name or UUID.
-*   **Add User Button**: Displays form to input Name, Traffic limit, and custom Duration limits.
-*   **Usage Calculator**: Estimates traffic based on total requests where approximately *6000 requests = 1 GB* of bandwidth usage.
-*   **Limit Exceeded / Daily Limit Exceeded Warnings**: Automatically locks the user sub-stream once limits are reached.
-*   **Reset Total Traffic Button**: Instantly resets the cumulative counter for that specific user.
-*   **Edit User**: Edit name, expiration days, or total traffic thresholds.
-*   **Pause User (⏸️/▶️)**: Instantly suspend subscriber subscription without deleting their config.
+The login screen is the first thing you see when opening the dashboard.
+
+- **Default Master Key:** `admin`
+- Type your key into the input field and click **Authenticate**.
+
+### Common login errors
+
+| Message | Cause | Fix |
+|---|---|---|
+| `⚠️ IOT_DB namespace missing!` | The D1 database binding is missing or incorrect | Go to Cloudflare → your Worker → Settings → Bindings, add a D1 binding with variable name `IOT_DB`, then redeploy |
+| `Invalid key` | Wrong master key entered | Use the correct key; if forgotten, query `SELECT * FROM kv_store WHERE key = 'masterKey'` in the D1 Console |
+| Blank page / no login form | Worker is not deployed or code is broken | Re-paste `_worker.js` and redeploy |
+
+> ⚠️ **Security:** Change the default `admin` key immediately after your first login. See [Tab 3 — System](#5-tab-3--system-settings).
 
 ---
 
-### 📋 6. Activity Logs Tab (گزارش فعالیت)
-*   Provides a persistent historical feed tracking administrative sessions, sync handshakes, and success/failed login attempts with IP, geographical region, and timestamp metrics.
+## 3. Tab 1 — Endpoints (Info)
+
+This is your home screen after logging in. It shows all the connection strings you need to import into a proxy client.
+
+### Profile Cards
+
+Each profile appears as a card with:
+
+- **Protocol badge** — shows VLESS or Trojan (or both)
+- **Connection string** — the full config URI to copy into your client
+- **Copy button** — copies the URI to clipboard
+- **Show QR Code** — opens a modal with a scannable QR code, ideal for mobile clients like Shadowrocket, Hiddify, or v2rayNG
+
+### Default Profile
+
+The default profile uses the UUID and settings configured in the System tab. Its subscription URL is:
+
+```
+https://<YOUR_WORKER_DOMAIN>/sync/sub
+```
+
+### Multi-User Profile Links
+
+Each extra user profile (added in the Advanced tab) gets its own subscription URL:
+
+```
+https://<YOUR_WORKER_DOMAIN>/sync/sub?sub=Username
+```
+
+Replace `Username` with the exact name you used when creating the profile (case-sensitive).
+
+### Cloud Sync URL
+
+The **Cloud Sync URL** is the base subscription endpoint. Import this directly into clients that support subscription URLs (v2rayN, Hiddify, Nekoray, Shadowrocket, etc.) for automatic config updates.
+
+---
+
+## 4. Tab 2 — Metrics (Network)
+
+Real-time diagnostics about your gateway and the Cloudflare edge node serving your requests.
+
+### Live Profile Usage
+
+| Column | Description |
+|---|---|
+| Profile Name | The UUID name or user alias |
+| Active Connections | Number of currently open proxy connections |
+| Last Activity | Timestamp of the most recent connection |
+| Data Used | Upload / Download totals tracked in D1 |
+
+> **Note:** Connection counters reset if the Cloudflare Worker isolate restarts (which happens after periods of inactivity on the free tier).
+
+### Network Cards
+
+- **Origin IP** — The real IP address of the incoming request as seen by the worker
+- **Edge Node (Colo)** — The Cloudflare data center code (e.g., `AMS`, `FRA`, `SIN`) handling your request
+- **Region** — The geographic region of that edge node
+
+### Latency Diagnostics
+
+Click **Run Diagnostics** to trigger a browser-side latency test against each of your configured Clean IPs. Results show in milliseconds and help you identify which IPs perform best from your current location.
+
+---
+
+## 5. Tab 3 — System (Settings)
+
+Core configuration for your gateway. All changes here require clicking **Update Config** at the bottom to take effect.
+
+### Primary Display Mode
+
+Controls which protocol(s) are used in generated configs:
+
+| Mode | Protocol | Description |
+|---|---|---|
+| **Alpha** | VLESS | Lighter, faster. Recommended for most setups |
+| **Beta** | Trojan | Stronger obfuscation. Good for stricter networks |
+| **Both** | VLESS + Trojan | Generates configs for both protocols simultaneously |
+
+### Device UUID
+
+Your connection password/identifier used in VLESS configs.
+
+- Leave **blank** to auto-generate one derived from your API route path
+- Or enter any valid UUID (format: `xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`)
+- In Trojan mode, this field acts as the Trojan password
+
+### API Route
+
+The URL path prefix for your dashboard and subscription endpoints. Default is `sync`.
+
+- Change this to a secret word (e.g., `x7k2m`) to hide your dashboard from anyone who doesn't know it
+- After saving, your dashboard moves to `https://<YOUR_WORKER_DOMAIN>/x7k2m/dash`
+- Subscription URL becomes `https://<YOUR_WORKER_DOMAIN>/x7k2m/sub`
+
+> ⚠️ **Bookmark the new URL** before saving if you change this setting, or you'll need to look it up from the D1 console.
+
+### Master Key
+
+The password for the dashboard login screen.
+
+- Change from the default `admin` immediately
+- Use a long, random passphrase
+- If lost, recover via the D1 Console: `SELECT * FROM kv_store WHERE key = 'masterKey';`
+
+### Name Prefix
+
+A label prepended to generated config names (e.g., `Core` → configs are named `Core-VLESS-1.2.3.4`). Useful to identify configs across multiple deployments.
+
+### Name Strategy
+
+Controls how config names are formatted in the subscription output. Options vary by version — check your dashboard for available values.
+
+### GitHub Repo
+
+Optionally link your fork of the repository. Used for version checking and update notifications inside the dashboard.
+
+---
+
+## 6. Tab 4 — Advanced (Network)
+
+Fine-grained control over transport, multi-user setup, integrations, and safety features.
+
+### Clean IPs (Multi-Generator)
+
+Enter Cloudflare clean IPs or hostnames that your clients should connect through. One per line, or comma-separated.
+
+```
+162.159.192.1
+104.16.0.1
+custom.cdn.example.com
+```
+
+The subscription generator creates a separate config entry for every IP you list, so your clients can pick the fastest one.
+
+**Finding clean IPs:** Use tools like [CFIP.rip](https://cfip.rip) or [bia.fan](https://bia.fan) to find IPs with low latency from your region.
+
+### Custom DNS
+
+Override the DNS resolver used by the worker when resolving upstream hostnames. Default is Cloudflare's DoH endpoint (`https://cloudflare-dns.com/dns-query`). Change this if you need a different resolver.
+
+### Resolve IP
+
+The IP used for internal DNS resolution fallback. Default: `1.1.1.1`.
+
+### Cascade (Slave Nodes)
+
+Connect multiple Nahan workers together. Enter the subscription URL of another Nahan instance (a "slave node") here. The master node will fetch and merge that slave's configs into its own subscription output, giving users all configs in one link.
+
+```
+https://slave-worker.workers.dev/sync/sub
+```
+
+### Multi-User Profiles
+
+Create separate subscription links for different users. One entry per line in the format:
+
+```
+<uuid>:Username
+```
+
+Example:
+```
+550e8400-e29b-41d4-a716-446655440000:Alice
+6ba7b810-9dad-11d1-80b4-00c04fd430c8:Bob
+```
+
+Each user's subscription URL:
+```
+https://<YOUR_WORKER_DOMAIN>/sync/sub?sub=Alice
+https://<YOUR_WORKER_DOMAIN>/sync/sub?sub=Bob
+```
+
+### Bandwidth Limits (per user)
+
+Set a data cap per user profile in GB or TB. When a user hits their limit, their profile is automatically paused. You can manually resume it from the Metrics tab or via the Telegram bot.
+
+### Telegram Bot
+
+Receive login alerts and manage the gateway remotely.
+
+**Setup:**
+1. Create a bot via [@BotFather](https://t.me/botfather) → copy the **Bot Token**
+2. Get your **Chat ID** from [@userinfobot](https://t.me/userinfobot)
+3. Enter both values in this section and save
+
+**Silent Alerts toggle:** When enabled, Telegram notifications are sent silently (no notification sound).
+
+**Bot Language:** Sets the language of Telegram bot messages (`fa` for Persian, `en` for English).
+
+### Cloudflare Analytics
+
+Monitor how many requests your worker handles per day (free tier limit: 100,000/day).
+
+**Setup:**
+1. Go to [Cloudflare Dashboard](https://dash.cloudflare.com/) → **Overview** → copy your **Account ID** from the right sidebar
+2. Go to **My Profile** → **API Tokens** → **Create Token** → use the "Read analytics" template
+3. Enter the Account ID and API Token here
+
+### Kill Switch
+
+An emergency toggle. When **ON**, all proxy traffic through your worker is immediately blocked — but the worker itself stays alive. Use this if you need to temporarily disable the gateway without deleting or undeploying it.
+
+To re-enable, toggle it **OFF** and save.
+
+Also triggerable via the Telegram `/pause` command.
+
+### Secure Hello (ECH)
+
+When enabled, Encrypted Client Hello (ECH) parameters are injected into generated client configurations. ECH provides an additional layer of TLS fingerprint obfuscation. Leave enabled unless your clients don't support it.
+
+---
+
+## 7. Tab 5 — Activity Logs
+
+A timestamped log of events on your gateway, including:
+
+- Successful and failed login attempts (with IP address)
+- Configuration saves (which settings were changed)
+- Kill Switch activations/deactivations
+- Telegram bot commands received
+
+Use this to audit who has accessed the dashboard and when.
+
+---
+
+## 8. Applying & Saving Changes
+
+Changes in the **System** and **Advanced** tabs are not applied until you explicitly save them.
+
+1. After making changes, scroll to the bottom and click **Update Config**.
+2. The button shows **"Syncing..."** while the config is written to D1.
+3. The page auto-reloads once saved.
+
+**Important:** If you changed the **API Route**, the page will redirect to the new URL automatically. Bookmark it before you lose it.
+
+If the save fails (network error, D1 unavailable), the page will show an error. Try again — your unsaved changes remain in the form inputs.
+
+---
+
+## 9. Backup & Restore
+
+Found in the **System** tab.
+
+### Export
+
+Click **📥 Export Configuration (JSON)** to download a `.json` file containing all your current settings (UUID, Clean IPs, user profiles, API route, Telegram config, etc.).
+
+> The Master Key is **not** exported for security reasons. Store it separately.
+
+### Restore / Import
+
+Click **📤 Import Configuration** and select a previously exported `.json` file. All fields are instantly populated from the backup. Click **Update Config** to apply and save.
+
+This is especially useful when:
+- Migrating to a new worker
+- Recovering after accidentally wiping settings
+- Copying a config from one deployment to another
+
+---
+
+## 10. Telegram Bot Commands
+
+Once your bot is configured in the Advanced tab, these commands are available:
+
+| Command | Description |
+|---|---|
+| `/start` | Shows a welcome message and bot status |
+| `/status` | Reports gateway status: active/paused, connection counts, edge node |
+| `/pause` | Activates the Kill Switch — stops all proxy traffic |
+| `/resume` | Deactivates the Kill Switch — restores proxy traffic |
+| `/users` | Lists all user profiles and their current data usage |
+| `/help` | Shows all available commands |
+
+---
+
+## 11. Tips & Best Practices
+
+**Change defaults immediately.** The `admin` key and `sync` route are publicly known. Always customize them on first login.
+
+**Use a secret API Route.** A random string like `a3f8z` makes your dashboard effectively unfindable by scanners.
+
+**Keep a backup.** Export your config after every major change. Redeploying the worker code does not affect D1 data, but accidental manual resets can.
+
+**Picking Clean IPs.** Use the Latency Diagnostics tool to measure which Clean IPs respond fastest from your users' locations. Add 3–5 IPs for redundancy.
+
+**Free tier limits.** The Cloudflare free plan allows 100,000 Worker requests per day. Each proxy connection typically generates multiple requests (WebSocket frames). Monitor usage via the Analytics integration.
+
+**Updating Nahan.** To upgrade to a newer version, simply paste the new `_worker.js` into the Worker editor and redeploy. Your D1 database and all configuration are untouched.
+
+---
+
+<div align="center">
+
+[📖 README](./README.md) · [🇮🇷 راهنمای فارسی](./HELP_FA.md) · [⭐ Star on GitHub](https://github.com/itsyebekhe/nahan)
+
+</div>
