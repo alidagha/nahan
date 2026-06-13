@@ -2905,7 +2905,7 @@ function getDashboardUI(hasDB) {
 
                       <!-- INFO VIEW -->
                       <div id="view-info" class="space-y-6 block">
-                          <div id="dyn-profiles-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                          <div id="dyn-profiles-container" class="columns-1 md:columns-2 gap-4"></div>
                       </div>
 
                       <!-- NETWORK/METRICS VIEW -->
@@ -3986,42 +3986,72 @@ function getDashboardUI(hasDB) {
                           const el = document.getElementById(id);
                           if(el) el.addEventListener('change', updateUI);
                       });
-                      
-                      const pCont = document.getElementById('dyn-profiles-container');
-                      pCont.innerHTML = '';
-                      data.profiles.forEach(p => {
-                          const isDef = p.name === 'Default';
-                          let html = \`<div class="bg-white dark:bg-darkcard rounded-3xl p-5 md:p-6 shadow-sm border border-slate-200 dark:border-darkborder relative overflow-hidden">
-                              <div class="absolute top-0 end-0 w-32 h-32 bg-primary/5 rounded-bl-[100px] -z-10"></div>
-                              <div class="flex items-center justify-between mb-4">
-                                  <h3 class="text-lg font-bold text-slate-800 dark:text-white flex items-center">
-                                      <svg class="w-5 h-5 me-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
-                                      \${p.name}
-                                  </h3>
-                                  \${isDef ? '<span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded font-bold uppercase">Master</span>' : ''}
-                              </div>
-                              <div class="space-y-3">
-                                  <div> 
-                                      <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">UUID</label>
-                                      <div class="bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-darkborder px-3 py-2 rounded-lg text-xs font-mono text-slate-500">\${p.id}</div>
-                                  </div>
-                                  <div class="relative">
-                                      <label class="block text-[10px] font-semibold text-emerald-500 uppercase tracking-wider mb-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Universal Sync URL</label>
-                                      <input type="text" id="sync-\${p.id}" readonly value="\${p.sync}" class="w-full bg-slate-50 dark:bg-darkbg border border-slate-200 dark:border-darkborder px-4 py-2.5 rounded-xl text-xs outline-none font-mono text-slate-600 dark:text-slate-400 truncate pe-12">
-                                      <button onclick="copyData('sync-\${p.id}')" class="absolute bottom-1 end-1 text-primary p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md"><svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button>
-                                  </div>
 
-                                  <div class="mt-2">
-                                      <button onclick="showQR('\${p.name}', document.getElementById('sync-\${p.id}').value)" class="w-full flex items-center justify-center p-2.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-darkborder rounded-xl transition-all gap-1.5 text-[11px] font-bold text-slate-600 dark:text-slate-400">
-                                          <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m0 11v1m5-7h1m-13 0h1m2-5a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V6a2 2 0 00-2-2h-8zM9 9h1m0 0v1m2-1h1m0 0v1"></path></svg>
-                                          <span>Show QR Code</span>
-                                      </button>
-                                  </div>
-                              </div>
-                          </div>\`;
-                          pCont.innerHTML += html;
-                      });
                       
+            
+  window.toggleAccordion = function(btn) 
+                        {
+                            const card = btn.closest('[data-accordion]');
+                            const content = card.querySelector('[data-accordion-content]');
+                            const icon = btn.querySelector('.accordion-icon');
+                            const isOpen = content.style.maxHeight && content.style.maxHeight !== '0px';
+
+                            if (isOpen) {
+                                content.style.maxHeight = '0';
+                                icon.style.transform = 'rotate(0deg)';
+                            } else {
+                                content.style.maxHeight = content.scrollHeight + 'px';
+                                icon.style.transform = 'rotate(180deg)';
+                            }
+                        }
+
+                window.handleCopy = function handleCopy(btn) {
+                    copyData('sync-' + btn.dataset.id);
+                }
+                window.handleQR = function handleQR(btn) {
+                    showQR(btn.dataset.name, document.getElementById('sync-' + btn.dataset.id).value);
+                }
+                const pCont = document.getElementById('dyn-profiles-container');
+                pCont.innerHTML = '';
+                data.profiles.forEach(p => {
+                            const isDef = p.name === 'Default';
+                            let html = \`<div class="bg-white dark:bg-darkcard rounded-3xl shadow-sm border border-slate-200 dark:border-darkborder relative mb-4 break-inside-avoid inline-block w-full" data-accordion>
+    <div class="absolute top-0 end-0 w-32 h-32 bg-primary/5 rounded-bl-[100px] -z-10"></div>
+    <button onclick="toggleAccordion(this)" class="w-full flex items-center justify-between p-5 md:p-6">
+        <h3 class="text-lg font-bold text-slate-800 dark:text-white flex items-center">
+            <svg class="w-5 h-5 me-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+            \${p.name}
+        </h3>
+        <div class="flex items-center gap-2">
+            \${isDef ? '<span class="text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded font-bold uppercase">Master</span>' : ''}
+            <svg class="w-4 h-4 text-slate-400 accordion-icon transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+        </div>
+    </button>
+    <div class="transition-all duration-300" style="max-height:0;overflow:hidden;" data-accordion-content>
+        <div class="space-y-3 px-5 md:px-6 pb-5 md:pb-6">
+            <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">UUID</label>
+                <div class="bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-darkborder px-3 py-2 rounded-lg text-xs font-mono text-slate-500">\${p.id}</div>
+            </div>
+            <div class="relative">
+                <label class="block text-[10px] font-semibold text-emerald-500 uppercase tracking-wider mb-1 flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>Universal Sync URL</label>
+                <input type="text" id="sync-\${p.id}" readonly value="\${p.sync}" class="w-full bg-slate-50 dark:bg-darkbg border border-slate-200 dark:border-darkborder px-4 py-2.5 rounded-xl text-xs outline-none font-mono text-slate-600 dark:text-slate-400 truncate pe-12">
+                <button data-id="\${p.id}" onclick="handleCopy(this)" class="absolute bottom-1 end-1 text-primary p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-md"><svg class="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></button>
+            </div>
+            <div class="mt-2">
+                <button data-id="\${p.id}" data-name="\${p.name}" onclick="handleQR(this)" class="w-full flex items-center justify-center p-2.5 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700 border border-slate-200 dark:border-darkborder rounded-xl transition-all gap-1.5 text-[11px] font-bold text-slate-600 dark:text-slate-400">
+                    <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m0 11v1m5-7h1m-13 0h1m2-5a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V6a2 2 0 00-2-2h-8zM9 9h1m0 0v1m2-1h1m0 0v1"></path></svg>
+                    <span>Show QR Code</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>\`;
+                         pCont.insertAdjacentHTML('beforeend', html);
+                      });
+
+
+
                       // Inject usage metrics table
                       const usageCont = document.getElementById('usage-metrics-container');
                       if(usageCont && data.usage) {
