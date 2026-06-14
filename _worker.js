@@ -5,7 +5,7 @@ import { connect } from "cloudflare:sockets";
  * Handles real-time binary streams from remote sensor nodes.
  */
 
-const CURRENT_VERSION = "2.5.2";
+const CURRENT_VERSION = "2.5.3";
 
 const getAlpha = () => String.fromCharCode(118, 108, 101, 115, 115);
 const getBeta = () => String.fromCharCode(116, 114, 111, 106, 97, 110);
@@ -4637,6 +4637,26 @@ function getDashboardUI(hasDB) {
           };
 
           const CHANGELOG_DATA = {
+              "2.5.3": {
+                  headline: { en: "Telegram Bot Fixes & Formatting Cleanup", fa: "رفع مشکلات ربات تلگرام و اصلاح فرمت‌بندی" },
+                  added: [],
+                  fixed: [
+                      { en: "Fixed admin buttons not showing immediately after /start in some cases", fa: "رفع مشکل نمایش ندادن دکمه‌های مدیر بلافاصله پس از /start در بعضی موارد" },
+                      { en: "Fixed subscription link button returning per-user links instead of master link", fa: "رفع مشکل بازگشت لینک‌های کاربری به جای لینک اصلی هنگام فشردن دکمه لینک اشتراک" },
+                      { en: "Fixed duplicate messages when clicking Update Usage with unchanged stats", fa: "رفع مشکل ارسال پیام تکراری هنگام فشردن بروزرسانی مصرف بدون تغییر آمار" },
+                      { en: "Fixed <code> tags showing as raw text in Telegram messages", fa: "رفع مشکل نمایش تگ‌های <code> به صورت متن خام در پیام‌های تلگرام" },
+                      { en: "Fixed subscription links not being clickable in Telegram", fa: "رفع مشکل غیرقابل کلیک بودن لینک‌های اشتراک در تلگرام" },
+                  ],
+                  improved: [
+                      { en: "Subscription links now use tap-to-copy formatting in Telegram", fa: "لینک‌های اشتراک اکنون با فرمت کپی با یک لمس در تلگرام نمایش داده می‌شوند" },
+                      { en: "UUIDs now use tap-to-copy formatting in user lists and detail views", fa: "شناسه‌های یکتا اکنون با فرمت کپی با یک لمس در لیست و جزئیات کاربران نمایش داده می‌شوند" },
+                      { en: "Bot menu now correctly shows admin options on first interaction after login", fa: "منوی ربات اکنون گزینه‌های مدیریتی را در اولین تعامل پس از ورود به درستی نمایش می‌دهد" },
+                      { en: "Update Usage button now edits the existing message instead of sending a new one", fa: "دکمه بروزرسانی مصرف اکنون پیام موجود را ویرایش می‌کند به جای ارسال پیام جدید" },
+                  ],
+                  notes: [
+                      { en: "No breaking changes — fully backward compatible", fa: "بدون تغییرات ناسازگار — کاملاً سازگار با نسخه‌های قبلی" },
+                  ]
+              },
               "2.5.2": {
                   headline: { en: "Modal Responsiveness & Mobile UX", fa: "واکنش‌گرایی مودال و تجربه کاربری موبایل" },
                   added: [],
