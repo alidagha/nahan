@@ -108,10 +108,12 @@
             "listen_port": 2333
         },
         {
-            "type": "dns",
+            "type": "direct",
             "tag": "dns-in",
             "listen": "127.0.0.1",
-            "listen_port": 6453
+            "listen_port": 6453,
+            "override_address": "1.1.1.1",
+            "override_port": 53
         }
     ],
     "outbounds": [
@@ -144,16 +146,15 @@
             "tag": "block"
         },
         {
-            "type": "dns",
-            "tag": "dns-out"
-        },
-        "{{OUTBOUND_NODES}}"
+            "type": "direct",
+            "tag": "{{OUTBOUND_NODES}}"
+        }
     ],
     "route": {
         "rules": [
             {
                 "protocol": "dns",
-                "outbound": "dns-out"
+                "action": "hijack-dns"
             },
             {
                 "clash_mode": "Direct",
@@ -165,7 +166,7 @@
             },
             {
                 "ip_cidr": "172.19.0.2",
-                "outbound": "dns-out"
+                "action": "hijack-dns"
             },
             {
                 "rule_set": [
